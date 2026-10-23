@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Review {{ product.name }}{% endblock %}
+{% block content %}
+<h1>Review {{ product.name }}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-dark">Submit Review</button>
+    <a href="{% url 'catalog:product_detail' product.slug %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+<p class="text-muted mt-3">Reviews are published after a moderator approves them.</p>
+{% endblock %}

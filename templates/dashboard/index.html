@@ -1,0 +1,25 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Dashboard</h1>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3"><small>Total Orders</small><h2>{{ order_count }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small>Pending Orders</small><h2>{{ pending_orders }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small>Active Products</small><h2>{{ product_count }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small>Reviews Awaiting Approval</small><h2>{{ pending_reviews }}</h2></div></div>
+</div>
+<h4>Recent Orders</h4>
+<table class="table">
+    <thead><tr><th>#</th><th>Customer</th><th>Status</th><th>Total</th><th>When</th></tr></thead>
+    <tbody>
+        {% for o in recent_orders %}
+        <tr>
+            <td><a href="{% url 'dashboard:order_edit' o.id %}">{{ o.id }}</a></td>
+            <td>{{ o.user.username }}</td>
+            <td><span class="badge bg-secondary">{{ o.get_status_display }}</span></td>
+            <td>{{ CURRENCY_SYMBOL }} {{ o.total }}</td>
+            <td>{{ o.created_at|timesince }} ago</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

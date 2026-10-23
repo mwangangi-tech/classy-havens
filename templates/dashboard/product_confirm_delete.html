@@ -1,0 +1,14 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Delete product</h1>
+<div class="alert alert-warning">
+    Are you sure you want to delete <strong>{{ object.name }}</strong>?
+    Variants referencing past orders cannot be deleted — set
+    <em>is_active</em> off instead.
+</div>
+<form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger">Yes, delete</button>
+    <a href="{% url 'dashboard:products' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+{% endblock %}

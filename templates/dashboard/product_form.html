@@ -1,0 +1,67 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>{% if object %}Edit Product{% else %}Add Product{% endif %}</h1>
+
+{% if not has_categories %}
+<div class="alert alert-warning">
+    <strong>No categories exist yet.</strong> You must create at least one
+    category before adding a product.
+    <a href="{% url 'dashboard:category_add' %}" class="btn btn-sm btn-dark ms-2">
+        Create category
+    </a>
+</div>
+{% endif %}
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    <strong>Please fix these fields:</strong>
+    <ul class="mb-0">
+        {% for field, errs in form.errors.items %}
+            {% for e in errs %}<li>{{ field }}: {{ e }}</li>{% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <div class="card mb-3"><div class="card-body">
+        {{ form.as_p }}
+    </div></div>
+
+    <div class="card mb-3"><div class="card-body">
+        <h4>Variants (at least one required)</h4>
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+            <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+        {% endif %}
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Size</th><th>Colour</th><th>SKU</th>
+                    <th>Stock</th><th>Price override</th><th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in formset %}
+                    {{ f.id }}
+                    <tr>
+                        <td>{{ f.size }}{% if f.size.errors %}<div class="text-danger small">{{ f.size.errors|join:", " }}</div>{% endif %}</td>
+                        <td>{{ f.color }}{% if f.color.errors %}<div class="text-danger small">{{ f.color.errors|join:", " }}</div>{% endif %}</td>
+                        <td>{{ f.sku }}{% if f.sku.errors %}<div class="text-danger small">{{ f.sku.errors|join:", " }}</div>{% endif %}</td>
+                        <td>{{ f.stock }}{% if f.stock.errors %}<div class="text-danger small">{{ f.stock.errors|join:", " }}</div>{% endif %}</td>
+                        <td>{{ f.price_override }}{% if f.price_override.errors %}<div class="text-danger small">{{ f.price_override.errors|join:", " }}</div>{% endif %}</td>
+                        <td>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="text-muted mb-0">
+            (product + size + colour) must be unique. SKU must be globally unique.
+        </p>
+    </div></div>
+
+    <button class="btn btn-dark">Save</button>
+    <a href="{% url 'dashboard:products' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+{% endblock %}

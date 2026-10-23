@@ -1,0 +1,15 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Update stock</h1>
+<div class="card mb-3"><div class="card-body">
+    <p class="mb-1"><strong>{{ object.product.name }}</strong></p>
+    <p class="text-muted mb-0">{{ object.size }} / {{ object.color }} — SKU {{ object.sku }}</p>
+</div></div>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-dark">Save</button>
+    <a href="{% url 'dashboard:inventory' %}" class="btn btn-outline-secondary">Back</a>
+</form>
+{% endblock %}

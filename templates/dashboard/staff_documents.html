@@ -1,0 +1,52 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Staff documents</h1>
+    {% if perms.accounts.add_staffdocument %}
+        <a href="{% url 'dashboard:staff_document_add' %}" class="btn btn-dark">
+            + Upload document
+        </a>
+    {% endif %}
+</div>
+
+<p class="text-muted">
+    All files are <strong>AES-encrypted at rest</strong>.
+    A download always passes through a permission check and is logged.
+</p>
+
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Title</th><th>Type</th><th>Staff</th><th>Size</th>
+            <th>Uploaded</th><th>By</th><th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in documents %}
+        <tr>
+            <td>{{ d.title }}</td>
+            <td>{{ d.get_document_type_display }}</td>
+            <td>{{ d.user.username }}</td>
+            <td>{{ d.file_size|filesizeformat }}</td>
+            <td>{{ d.created_at|date:"M d, Y" }}</td>
+            <td>{{ d.uploaded_by.username }}</td>
+            <td>
+                <a href="{% url 'dashboard:staff_document_download' d.pk %}"
+                   class="btn btn-sm btn-outline-dark">Download</a>
+                {% if perms.accounts.delete_staffdocument %}
+                <form method="post"
+                      action="{% url 'dashboard:staff_document_delete' d.pk %}"
+                      style="display:inline"
+                      onsubmit="return confirm('Delete this document permanently?')">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+            <tr><td colspan="7" class="text-muted">No documents uploaded yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

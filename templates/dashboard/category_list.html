@@ -1,0 +1,68 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Categories</h1>
+    {% if perms.catalog.add_category %}
+        <a href="{% url 'dashboard:category_add' %}" class="btn btn-dark">
+            + Add Category
+        </a>
+    {% endif %}
+</div>
+
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th style="width:72px"></th>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Products</th>
+            <th>Sort</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in categories %}
+        <tr>
+            <td>
+                {% if c.image %}
+                    <img src="{{ c.image.url }}" alt="{{ c.name }}"
+                         style="width:56px;height:56px;object-fit:cover;border-radius:4px;">
+                {% else %}
+                    <div style="width:56px;height:56px;background:#f3efe9;border-radius:4px;"></div>
+                {% endif %}
+            </td>
+            <td>
+                <strong>{{ c.name }}</strong>
+                {% if c.description %}
+                    <div class="text-muted small">{{ c.description|truncatechars:80 }}</div>
+                {% endif %}
+            </td>
+            <td><code>{{ c.slug }}</code></td>
+            <td>
+                <a href="{% url 'dashboard:products' %}?category={{ c.id }}">
+                    {{ c.product_count }}
+                </a>
+            </td>
+            <td>{{ c.sort_order }}</td>
+            <td>
+                {% if perms.catalog.change_category %}
+                    <a href="{% url 'dashboard:category_edit' c.id %}"
+                       class="btn btn-sm btn-outline-dark">Edit</a>
+                {% endif %}
+                {% if perms.catalog.delete_category %}
+                    <a href="{% url 'dashboard:category_delete' c.id %}"
+                       class="btn btn-sm btn-outline-danger">Delete</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" class="text-muted">
+                    No categories yet. Click <strong>+ Add Category</strong>
+                    to create the first one.
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

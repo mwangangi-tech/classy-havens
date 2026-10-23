@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Cart — Classy Havens{% endblock %}
+{% block content %}
+<h1>Your Cart</h1>
+
+{% if cart|length %}
+<table class="table align-middle">
+    <thead><tr><th>Product</th><th>Variant</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
+    <tbody>
+        {% for item in cart %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.variant.size }} / {{ item.variant.color }}</td>
+                <td>{{ CURRENCY_SYMBOL }} {{ item.unit_price }}</td>
+                <td>
+                    <form method="post" action="{% url 'cart:cart_update' item.variant.id %}" class="d-flex">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
+                               max="{{ item.variant.stock }}" class="form-control form-control-sm"
+                               style="width:80px;">
+                        <button class="btn btn-sm btn-outline-dark ms-1">Update</button>
+                    </form>
+                </td>
+                <td>{{ CURRENCY_SYMBOL }} {{ item.subtotal }}</td>
+                <td>
+                    <form method="post" action="{% url 'cart:cart_remove' item.variant.id %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr><th colspan="4">Total</th><th colspan="2">{{ CURRENCY_SYMBOL }} {{ cart.total }}</th></tr>
+    </tfoot>
+</table>
+<a href="{% url 'orders:checkout' %}" class="btn btn-dark btn-lg">Proceed to Checkout</a>
+{% else %}
+<p>Your cart is empty. <a href="{% url 'catalog:product_list' %}">Continue shopping</a>.</p>
+{% endif %}
+{% endblock %}

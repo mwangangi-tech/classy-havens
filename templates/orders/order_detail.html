@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }} — Classy Havens{% endblock %}
+{% block content %}
+<h1>Order #{{ order.id }}</h1>
+<p>Placed on {{ order.created_at|date:"M d, Y H:i" }} — Status:
+    <span class="badge bg-secondary badge-status">{{ order.get_status_display }}</span></p>
+
+<h4>Items</h4>
+<ul class="list-group mb-3">
+    {% for item in order.items.all %}
+        <li class="list-group-item d-flex justify-content-between">
+            <span>{{ item.variant.product.name }} ({{ item.variant.size }}/{{ item.variant.color }}) × {{ item.quantity }}</span>
+            <strong>{{ CURRENCY_SYMBOL }} {{ item.subtotal }}</strong>
+        </li>
+    {% endfor %}
+    <li class="list-group-item d-flex justify-content-between">
+        <strong>Total</strong><strong>{{ CURRENCY_SYMBOL }} {{ order.total }}</strong>
+    </li>
+</ul>
+
+<h4>Shipping</h4>
+<p>{{ order.shipping_address.full_name }}<br>
+   {{ order.shipping_address.street }}<br>
+   {{ order.shipping_address.city }}, {{ order.shipping_address.state }}<br>
+   {{ order.shipping_address.country }}<br>
+   {{ order.shipping_address.phone }}</p>
+
+{% if order.status == order.Status.PENDING and order.payment.status != order.payment.Status.SUCCESS %}
+    <p class="alert alert-warning">Your payment has not been confirmed.</p>
+{% endif %}
+{% endblock %}

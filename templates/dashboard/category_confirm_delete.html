@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Delete category</h1>
+
+{% if product_count %}
+<div class="alert alert-warning">
+    <strong>Cannot delete this category.</strong>
+    <p class="mb-0">
+        It still contains <strong>{{ product_count }} product{{ product_count|pluralize }}</strong>.
+        Reassign them to another category first, or deactivate the products.
+    </p>
+</div>
+<a href="{% url 'dashboard:products' %}?category={{ object.id }}"
+   class="btn btn-outline-dark">View its products</a>
+<a href="{% url 'dashboard:categories' %}" class="btn btn-outline-secondary">Back</a>
+{% else %}
+<div class="alert alert-secondary">
+    Are you sure you want to delete <strong>{{ object.name }}</strong>?
+    This cannot be undone.
+</div>
+<form method="post">
+    {% csrf_token %}
+    <button class="btn btn-danger">Yes, delete</button>
+    <a href="{% url 'dashboard:categories' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Update Order #{{ object.id }}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-dark">Save</button>
+    <a href="{% url 'dashboard:orders' %}" class="btn btn-outline-secondary">Back</a>
+</form>
+{% endblock %}

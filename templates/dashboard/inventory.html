@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Inventory</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Total units</small><h2>{{ total_units }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Inventory value</small><h2>{{ CURRENCY_SYMBOL }} {{ total_value|floatformat:2 }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Low stock (&lt; {{ low_threshold }})</small><h2>{{ low_stock|length }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Out of stock</small><h2>{{ out_of_stock|length }}</h2></div></div>
+</div>
+
+{% if out_of_stock or low_stock %}
+<div class="alert alert-warning">
+    <strong>Attention:</strong>
+    {{ out_of_stock|length }} variant(s) out of stock,
+    {{ low_stock|length }} variant(s) low on stock.
+</div>
+{% endif %}
+
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Product</th><th>Category</th><th>Size / Colour</th><th>SKU</th>
+            <th>Stock</th><th>Unit price</th><th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for v in variants %}
+        <tr>
+            <td>{{ v.product.name }}</td>
+            <td>{{ v.product.category.name }}</td>
+            <td>{{ v.size }} / {{ v.color }}</td>
+            <td>{{ v.sku }}</td>
+            <td>
+                {{ v.stock }}
+                {% if v.stock == 0 %}<span class="badge bg-danger">Out</span>
+                {% elif v.stock < low_threshold %}<span class="badge bg-warning">Low</span>{% endif %}
+            </td>
+            <td>{{ CURRENCY_SYMBOL }} {{ v.price }}</td>
+            <td>
+                {% if perms.catalog.change_productvariant %}
+                    <a href="{% url 'dashboard:inventory_edit' v.id %}" class="btn btn-sm btn-outline-dark">Edit</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+            <tr><td colspan="7" class="text-muted">No variants yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

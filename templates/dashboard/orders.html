@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Orders</h1>
+<form method="get" class="mb-3">
+    <select name="status" class="form-select" style="max-width:200px" onchange="this.form.submit()">
+        <option value="">All statuses</option>
+        {% for value, label in view.model.Status.choices %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+</form>
+<table class="table">
+    <thead><tr><th>#</th><th>Customer</th><th>Status</th><th>Total</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o.id }}</td>
+            <td>{{ o.user.username }}</td>
+            <td>{{ o.get_status_display }}</td>
+            <td>{{ CURRENCY_SYMBOL }} {{ o.total }}</td>
+            <td>{{ o.created_at|date:"M d, Y H:i" }}</td>
+            <td><a href="{% url 'dashboard:order_edit' o.id %}">Update</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

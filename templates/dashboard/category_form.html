@@ -1,0 +1,31 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>{% if object %}Edit category{% else %}Add category{% endif %}</h1>
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    <strong>Please fix these fields:</strong>
+    <ul class="mb-0">
+        {% for field, errs in form.errors.items %}
+            {% for e in errs %}<li>{{ field }}: {{ e }}</li>{% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <div class="card mb-3"><div class="card-body">
+        {{ form.as_p }}
+        <p class="text-muted mb-0">
+            Leave <em>slug</em> blank to auto-generate it from the name.
+            <em>Sort order</em>: lower numbers appear first in the storefront.
+        </p>
+    </div></div>
+
+    <button class="btn btn-dark">
+        {% if object %}Save changes{% else %}Create category{% endif %}
+    </button>
+    <a href="{% url 'dashboard:categories' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+{% endblock %}

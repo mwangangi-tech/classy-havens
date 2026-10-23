@@ -1,0 +1,23 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>{% if object %}Edit {{ object.username }}{% else %}Create staff account{% endif %}</h1>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="card mb-3"><div class="card-body">
+        {{ form.as_p }}
+    </div></div>
+    <button class="btn btn-dark">
+        {% if object %}Save changes{% else %}Create account{% endif %}
+    </button>
+    <a href="{% url 'dashboard:staff_list' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+
+{% if not object %}
+<p class="text-muted mt-3">
+    Choose <strong>Staff</strong> for order fulfilment, <strong>Manager</strong>
+    for catalog &amp; review moderation, or <strong>Admin</strong> for full
+    access including staff management. Credentials take effect immediately.
+</p>
+{% endif %}
+{% endblock %}

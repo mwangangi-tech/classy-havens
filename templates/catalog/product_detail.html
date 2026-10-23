@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — Classy Havens{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}">
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <h1>{{ product.name }}</h1>
+        <p class="text-muted">{{ product.category.name }}</p>
+        <p class="fs-4">{{ CURRENCY_SYMBOL }} {{ product.base_price }}</p>
+        <p>{{ product.description }}</p>
+
+        {% if variants %}
+        <form method="post" action="{% url 'cart:cart_add' variants.0.id %}"
+              id="add-form" class="mb-3">
+            {% csrf_token %}
+            <label class="form-label">Variant</label>
+            <select name="variant" id="variant-select" class="form-select mb-2">
+                {% for v in variants %}
+                    <option value="{{ v.id }}"
+                            data-url="{% url 'cart:cart_add' v.id %}">
+                        {{ v.size }} / {{ v.color }} — {{ CURRENCY_SYMBOL }} {{ v.price }} ({{ v.stock }} left)
+                    </option>
+                {% endfor %}
+            </select>
+            <label class="form-label">Quantity</label>
+            <input type="number" name="quantity" value="1" min="1" class="form-control mb-2" style="max-width:120px;">
+            <button class="btn btn-dark w-100">Add to Cart</button>
+        </form>
+        <script>
+            document.getElementById("variant-select").addEventListener("change", function (e) {
+                document.getElementById("add-form").action = e.target.selectedOptions[0].dataset.url;
+            });
+            document.getElementById("add-form").action =
+                document.getElementById("variant-select").selectedOptions[0].dataset.url;
+        </script>
+        {% else %}
+            <p class="text-danger">Out of stock.</p>
+        {% endif %}
+
+        <hr>
+        <h4>Reviews</h4>
+        {% if reviews %}
+            {% for r in reviews %}
+                <div class="border-bottom py-2">
+                    <strong>{{ r.title }}</strong>
+                    <span class="text-warning">{{ r.rating }} ★</span>
+                    <small class="text-muted">— {{ r.user.username }}</small>
+                    <p class="mb-1">{{ r.body }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">No reviews yet.</p>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'reviews:submit' product.slug %}" class="btn btn-outline-dark mt-3">
+                Write a review
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

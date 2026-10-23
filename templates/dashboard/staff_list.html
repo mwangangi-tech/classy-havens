@@ -1,0 +1,33 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Staff accounts</h1>
+    {% if perms.accounts.add_customuser %}
+        <a href="{% url 'dashboard:staff_add' %}" class="btn btn-dark">+ Add Staff</a>
+    {% endif %}
+</div>
+
+<table class="table align-middle">
+    <thead>
+        <tr><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Joined</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for u in staff %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email|default:"—" }}</td>
+            <td>{{ u.get_role_display }}</td>
+            <td>{{ u.is_active|yesno:"Yes,No" }}</td>
+            <td>{{ u.date_joined|date:"M d, Y" }}</td>
+            <td>
+                {% if perms.accounts.change_customuser %}
+                    <a href="{% url 'dashboard:staff_edit' u.id %}" class="btn btn-sm btn-outline-dark">Edit</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+            <tr><td colspan="6" class="text-muted">No staff accounts yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

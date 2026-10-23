@@ -1,0 +1,66 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Sales</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Total revenue</small><h2>{{ CURRENCY_SYMBOL }} {{ total_revenue }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Today</small><h2>{{ CURRENCY_SYMBOL }} {{ today_revenue }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Last 7 days</small><h2>{{ CURRENCY_SYMBOL }} {{ week_revenue }}</h2></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Last 30 days</small><h2>{{ CURRENCY_SYMBOL }} {{ month_revenue }}</h2></div></div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Total orders</small><h3>{{ total_orders }}</h3></div></div>
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Paid orders</small><h3>{{ paid_orders }}</h3></div></div>
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Average order value</small><h3>{{ CURRENCY_SYMBOL }} {{ average_order|floatformat:2 }}</h3></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <h4>Orders by status</h4>
+        <table class="table">
+            <thead><tr><th>Status</th><th>Count</th></tr></thead>
+            <tbody>
+                {% for row in status_breakdown %}
+                    <tr><td>{{ row.status|capfirst }}</td><td>{{ row.count }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <h4>Top products</h4>
+        <table class="table">
+            <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
+            <tbody>
+                {% for row in top_products %}
+                    <tr>
+                        <td>{{ row.variant__product__name }}</td>
+                        <td>{{ row.sold }}</td>
+                        <td>{{ CURRENCY_SYMBOL }} {{ row.revenue }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3" class="text-muted">No sales yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h4 class="mt-4">Recent paid orders</h4>
+<table class="table">
+    <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Paid at</th></tr></thead>
+    <tbody>
+        {% for o in recent_paid %}
+            <tr>
+                <td><a href="{% url 'dashboard:order_edit' o.id %}">{{ o.id }}</a></td>
+                <td>{{ o.user.username }}</td>
+                <td>{{ CURRENCY_SYMBOL }} {{ o.total }}</td>
+                <td>{{ o.paid_at|date:"M d, Y H:i"|default:"—" }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-muted">No paid orders yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

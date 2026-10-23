@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Session refreshed{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <h1>Your session was refreshed</h1>
+        <p class="lead">
+            For security, Django rotates the CSRF token every time you log
+            in or out. The form you just submitted was loaded <em>before</em>
+            that rotation, so the browser's token no longer matches the
+            server's.
+        </p>
+        <p><strong>What to do:</strong> reload the page you were on and
+        submit again. Nothing was saved, nothing was lost.</p>
+        <a class="btn btn-dark" href="javascript:history.back()">Go back and reload</a>
+        <a class="btn btn-outline-secondary" href="/">Home</a>
+        {% if reason %}<p class="text-muted mt-3"><small>{{ reason }}</small></p>{% endif %}
+    </div>
+</div>
+{% endblock %}

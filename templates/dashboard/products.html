@@ -1,0 +1,50 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Products</h1>
+    {% if perms.catalog.add_product %}
+        <a href="{% url 'dashboard:product_add' %}" class="btn btn-dark">
+            + Add Product
+        </a>
+    {% endif %}
+</div>
+
+<form method="get" class="mb-3" style="max-width:280px">
+    <select name="category" class="form-select" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for c in all_categories %}
+            <option value="{{ c.id }}"
+                    {% if selected_category == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.name }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+<table class="table">
+    <thead>
+        <tr><th>Name</th><th>Category</th><th>Price</th><th>Active</th><th>Variants</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for p in products %}
+        <tr>
+            <td>{{ p.name }}</td>
+            <td>{{ p.category.name }}</td>
+            <td>{{ CURRENCY_SYMBOL }} {{ p.base_price }}</td>
+            <td>{{ p.is_active|yesno:"Yes,No" }}</td>
+            <td>{{ p.variants.count }}</td>
+            <td>
+                {% if perms.catalog.change_product %}
+                    <a href="{% url 'dashboard:product_edit' p.id %}" class="btn btn-sm btn-outline-dark">Edit</a>
+                {% endif %}
+                {% if perms.catalog.delete_product %}
+                    <a href="{% url 'dashboard:product_delete' p.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+            <tr><td colspan="6" class="text-muted">No products yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Upload staff document</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-dark">Upload &amp; encrypt</button>
+    <a href="{% url 'dashboard:staff_documents' %}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+
+<p class="text-muted mt-3">
+    Accepted types: PDF, JPEG, PNG, WebP. Maximum size 10 MB.
+</p>
+{% endblock %}

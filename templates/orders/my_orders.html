@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}My Orders — Classy Havens{% endblock %}
+{% block content %}
+<h1>My Orders</h1>
+{% if orders %}
+<table class="table">
+    <thead><tr><th>#</th><th>Date</th><th>Status</th><th>Total</th><th></th></tr></thead>
+    <tbody>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o.id }}</td>
+            <td>{{ o.created_at|date:"M d, Y" }}</td>
+            <td><span class="badge bg-secondary badge-status">{{ o.get_status_display }}</span></td>
+            <td>{{ CURRENCY_SYMBOL }} {{ o.total }}</td>
+            <td><a href="{% url 'orders:order_detail' o.id %}">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}<p>No orders yet.</p>{% endif %}
+{% endblock %}
