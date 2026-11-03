@@ -8,6 +8,8 @@ ROLE_PERMISSIONS = {
         "view_order", "change_order",
         "view_payment",
         "view_review",
+        "view_contactmessage", "change_contactmessage",
+        "view_customuser", "view_loyaltyaccount",
     ],
     "Manager": [
         "add_product", "change_product", "delete_product",
@@ -19,6 +21,9 @@ ROLE_PERMISSIONS = {
         "view_payment",
         "view_review", "change_review", "delete_review",
         "view_staffdocument", "add_staffdocument",
+        "view_discount", "add_discount", "change_discount",
+        "view_contactmessage", "change_contactmessage",
+        "view_customuser", "view_loyaltyaccount",
     ],
     "Admin": [
         "view_product", "add_product", "change_product", "delete_product",
@@ -33,6 +38,10 @@ ROLE_PERMISSIONS = {
         "view_customuser", "add_customuser", "change_customuser",
         "view_staffdocument", "add_staffdocument",
         "change_staffdocument", "delete_staffdocument",
+        "view_loyaltyaccount", "change_loyaltyaccount",
+        "view_loyaltytransaction",
+        "view_discount", "add_discount", "change_discount", "delete_discount",
+        "view_contactmessage", "change_contactmessage", "delete_contactmessage",
     ],
 }
 

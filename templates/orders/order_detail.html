@@ -1,31 +1,77 @@
 {% extends "base.html" %}
 {% block title %}Order #{{ order.id }} — Classy Havens{% endblock %}
+
 {% block content %}
-<h1>Order #{{ order.id }}</h1>
-<p>Placed on {{ order.created_at|date:"M d, Y H:i" }} — Status:
-    <span class="badge bg-secondary badge-status">{{ order.get_status_display }}</span></p>
+<div class="row justify-content-center mt-4">
+    <div class="col-md-9 col-lg-8">
+        
+        <div class="text-center mb-5">
+            <div style="font-size: 3rem; color: var(--ch-success); margin-bottom: 1rem;">✓</div>
+            <h1 class="mb-2">Thank you for your order</h1>
+            <p class="text-muted">Order #{{ order.id }} &middot; Placed on {{ order.created_at|date:"F j, Y" }}</p>
+        </div>
 
-<h4>Items</h4>
-<ul class="list-group mb-3">
-    {% for item in order.items.all %}
-        <li class="list-group-item d-flex justify-content-between">
-            <span>{{ item.variant.product.name }} ({{ item.variant.size }}/{{ item.variant.color }}) × {{ item.quantity }}</span>
-            <strong>{{ CURRENCY_SYMBOL }} {{ item.subtotal }}</strong>
-        </li>
-    {% endfor %}
-    <li class="list-group-item d-flex justify-content-between">
-        <strong>Total</strong><strong>{{ CURRENCY_SYMBOL }} {{ order.total }}</strong>
-    </li>
-</ul>
+        <div class="card p-4 p-md-5 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h4 class="mb-0">Order Summary</h4>
+                <span class="badge bg-secondary fs-6">{{ order.get_status_display }}</span>
+            </div>
 
-<h4>Shipping</h4>
-<p>{{ order.shipping_address.full_name }}<br>
-   {{ order.shipping_address.street }}<br>
-   {{ order.shipping_address.city }}, {{ order.shipping_address.state }}<br>
-   {{ order.shipping_address.country }}<br>
-   {{ order.shipping_address.phone }}</p>
+            <ul class="list-group list-group-flush mb-4">
+                {% for item in order.items.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div>
+                        <h6 class="mb-1">{{ item.variant.product.name }}</h6>
+                        <small class="text-muted">Size: {{ item.variant.size }} | Colour: {{ item.variant.color }}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold">{{ CURRENCY_SYMBOL }} {{ item.unit_price }}</div>
+                        <small class="text-muted">Qty: {{ item.quantity }}</small>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
 
-{% if order.status == order.Status.PENDING and order.payment.status != order.payment.Status.SUCCESS %}
-    <p class="alert alert-warning">Your payment has not been confirmed.</p>
-{% endif %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted">Subtotal</span>
+                <span>{{ CURRENCY_SYMBOL }} {{ order.subtotal }}</span>
+            </div>
+            {% if order.discount_amount > 0 %}
+            <div class="d-flex justify-content-between align-items-center mb-2" style="color: var(--ch-success);">
+                <span>Discount ({{ order.discount_code }})</span>
+                <span>-{{ CURRENCY_SYMBOL }} {{ order.discount_amount }}</span>
+            </div>
+            {% endif %}
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                <h5 class="mb-0">Total Paid</h5>
+                <h4 class="mb-0">{{ CURRENCY_SYMBOL }} {{ order.total }}</h4>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card p-4 h-100">
+                    <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.1em;">Shipping Details</h6>
+                    <p class="mb-1"><strong>{{ order.shipping_address.full_name }}</strong></p>
+                    <p class="mb-1">{{ order.shipping_address.street }}</p>
+                    <p class="mb-1">{{ order.shipping_address.city }}, {{ order.shipping_address.state }}</p>
+                    <p class="mb-1">{{ order.shipping_address.country }}</p>
+                    <p class="mb-0 text-muted mt-2">{{ order.shipping_address.phone }}</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-4 h-100 d-flex flex-column justify-content-center text-center">
+                    <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.1em;">Need Help?</h6>
+                    <p class="text-muted mb-3">If you have any questions about your order, our client care team is here to help.</p>
+                    <a href="{% url 'pages:contact' %}" class="btn btn-outline-dark">Contact Support</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'catalog:product_list' %}" class="btn btn-dark px-5 py-3">Continue Shopping</a>
+        </div>
+        
+    </div>
+</div>
 {% endblock %}

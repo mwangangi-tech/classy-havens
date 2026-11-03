@@ -6,11 +6,43 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-
+from django.contrib.auth.views import PasswordChangeView
 from .forms import RegisterForm, LoginForm ,ProfileForm
+
 
 security_logger = logging.getLogger("security")
 
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = "accounts/password_change.html"
+    success_url = reverse_lazy("accounts:profile")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Your password has been updated successfully.")
+        return super().form_valid(form)
+
+@login_required
+def profile_view(request):
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("accounts:profile")
+    else:
+        form = ProfileForm(instance=request.user)
+    return render(request, "accounts/profile.html", {"form": form})
+
+@login_required
+def remove_avatar(request):
+    if request.method == "POST":
+        user = request.user
+        if user.avatar:
+            user.avatar.delete(save=False)  # Delete the physical file from disk
+            user.avatar = None
+            user.save()
+            messages.success(request, "Profile picture removed.")
+    return redirect("accounts:profile")
 
 class RegisterView(CreateView):
     form_class = RegisterForm
@@ -37,7 +69,7 @@ class CustomLoginView(LoginView):
             self.request.META.get("REMOTE_ADDR"),
         )
 
-        # Respect an explicit ?next= (e.g. /admin/ or a protected page)
+        # Respect an explicit ?next= ( /admin/ or a protected page)
         next_url = self.get_redirect_url()
         if next_url:
             return redirect(next_url)

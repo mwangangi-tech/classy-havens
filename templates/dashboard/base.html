@@ -15,8 +15,14 @@
                href="{% url 'dashboard:products' %}">Products</a>
             <a class="list-group-item list-group-item-action"
                href="{% url 'dashboard:inventory' %}">Inventory</a>
+
+               <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{% url 'dashboard:contact_messages' %}">
+                  Inbox
+               </a>
             <a class="list-group-item list-group-item-action"
                href="{% url 'dashboard:reviews' %}">Reviews</a>
+               <a class="list-group-item list-group-item-action"
+               href="{% url 'dashboard:loyalty' %}">Loyalty &amp; Discounts</a>
             {% if user.is_superuser or perms.accounts.add_customuser %}
                 <a class="list-group-item list-group-item-action"
                    href="{% url 'dashboard:staff_list' %}">Staff</a>

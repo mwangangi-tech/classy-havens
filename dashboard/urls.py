@@ -16,12 +16,12 @@ urlpatterns = [
     path("categories/<int:pk>/edit/", views.CategoryUpdateView.as_view(), name="category_edit"),
     path("categories/<int:pk>/delete/", views.CategoryDeleteView.as_view(), name="category_delete"),
 
-    # Products
+        # Products
     path("products/", views.ProductManagementView.as_view(), name="products"),
     path("products/add/", views.ProductCreateView.as_view(), name="product_add"),
     path("products/<int:pk>/edit/", views.ProductUpdateView.as_view(), name="product_edit"),
+    path("products/<int:pk>/toggle/", views.ProductToggleActiveView.as_view(), name="product_toggle"),
     path("products/<int:pk>/delete/", views.ProductDeleteView.as_view(), name="product_delete"),
-
     # Reviews
     path("reviews/", views.ReviewModerationView.as_view(), name="reviews"),
     path("reviews/<int:pk>/toggle/", views.ReviewApproveToggleView.as_view(), name="review_toggle"),
@@ -44,4 +44,15 @@ urlpatterns = [
     path("staff-documents/upload/", views.StaffDocumentUploadView.as_view(), name="staff_document_add"),
     path("staff-documents/<int:pk>/download/", views.StaffDocumentDownloadView.as_view(), name="staff_document_download"),
     path("staff-documents/<int:pk>/delete/", views.StaffDocumentDeleteView.as_view(), name="staff_document_delete"),
+
+        # Loyalty & discounts
+    path("loyalty/", views.LoyaltyListView.as_view(), name="loyalty"),
+    path("loyalty/discount/add/", views.DiscountCreateView.as_view(), name="discount_add"),
+    path("loyalty/discounts/", views.DiscountListView.as_view(), name="discounts"),
+    path("loyalty/discounts/<int:pk>/toggle/", views.DiscountToggleView.as_view(), name="discount_toggle"),
+
+        # Contact Messages
+    path("messages/", views.ContactMessageListView.as_view(), name="contact_messages"),
+    path("messages/<int:pk>/reply/", views.ContactMessageReplyView.as_view(), name="contact_reply"),
+    
 ]

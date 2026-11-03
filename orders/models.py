@@ -41,6 +41,8 @@ class Order(models.Model):
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.PROTECT)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
+    discount_code = models.CharField(max_length=40, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     paid_at = models.DateTimeField(null=True, blank=True)
@@ -54,10 +56,9 @@ class Order(models.Model):
     def get_absolute_url(self):
         return reverse("orders:order_detail", args=[self.id])
 
-    def can_review(self, product):
-        if self.status != self.Status.DELIVERED:
-            return False
-        return self.items.filter(variant__product=product).exists()
+    @property
+    def subtotal(self):
+        return self.total + self.discount_amount
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")

@@ -1,12 +1,15 @@
 import os
 from pathlib import Path
 from decouple import config, Csv
-
+import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
+ALLOWED_HOSTS.append(".vercel.app") 
+
+
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
     default="http://localhost:8000,http://127.0.0.1:8000",
@@ -28,10 +31,13 @@ INSTALLED_APPS = [
     "payments",
     "reviews",
     "dashboard",
+    "loyalty", 
+    "pages",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -65,16 +71,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # Database — SQLite for dev, switch to Postgres via env for prod
-if config("USE_POSTGRES", default=False, cast=bool):
+if config("DATABASE_URL", default=None):
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": config("DB_NAME"),
-            "USER": config("DB_USER"),
-            "PASSWORD": config("DB_PASSWORD"),
-            "HOST": config("DB_HOST", default="localhost"),
-            "PORT": config("DB_PORT", default="5432"),
-        }
+        "default": dj_database_url.config(conn_max_age=600, ssl_require=True)
     }
 else:
     DATABASES = {
@@ -112,6 +111,7 @@ USE_TZ = True
 CURRENCY_CODE = config("CURRENCY_CODE", default="KES")
 CURRENCY_SYMBOL = config("CURRENCY_SYMBOL", default="KSh")
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -121,7 +121,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# --- Security hardening (OWASP A02 / A05) ---
+# Security hardening (OWASP A02 / A05)
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -144,7 +144,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_FAILURE_VIEW = "config.views.csrf_failure"
 ENCRYPTION_KEY = config("ENCRYPTION_KEY")
 
-# --- Paystack ---
+# Paystack 
 PAYSTACK_PUBLIC_KEY = config("PAYSTACK_PUBLIC_KEY")
 PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY")
 PAYSTACK_CALLBACK_URL = config(
@@ -153,16 +153,18 @@ PAYSTACK_CALLBACK_URL = config(
 PAYSTACK_BASE_URL = "https://api.paystack.co"
 
 
-# --- Email ---
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+#  Email 
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = config("EMAIL_HOST", default="")
 EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@classyhavens.com")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="tmmbbh@gmail.com")
 
-# --- Logging (OWASP A09) ---
+
+
+# Logging (OWASP A09)
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 

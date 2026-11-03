@@ -11,8 +11,11 @@ urlpatterns = [
     path("payments/", include("payments.urls", namespace="payments")),
     path("reviews/", include("reviews.urls", namespace="reviews")),
     path("dashboard/", include("dashboard.urls", namespace="dashboard")),
-    path("", include("catalog.urls", namespace="catalog")),
+    path("", include("catalog.urls", namespace="catalog")),  
+    path("pages/", include("pages.urls", namespace="pages")), 
 ]
+
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

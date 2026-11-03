@@ -1,14 +1,62 @@
 {% extends "dashboard/base.html" %}
 {% block dashboard_content %}
 <h1>Delete product</h1>
+
+{% if has_orders %}
 <div class="alert alert-warning">
-    Are you sure you want to delete <strong>{{ object.name }}</strong>?
-    Variants referencing past orders cannot be deleted — set
-    <em>is_active</em> off instead.
+    <h5 class="mb-2">This product cannot be deleted</h5>
+    <p class="mb-2">
+        <strong>{{ object.name }}</strong> appears in
+        <strong>{{ order_refs }} order item{{ order_refs|pluralize }}</strong>.
+        Deleting it would destroy part of your financial history, so the
+        system protects these records.
+    </p>
+    <p class="mb-0">
+        If you no longer want to sell this product, <strong>deactivate</strong>
+        it instead — it will disappear from the storefront and from new
+        checkouts, but all past orders remain intact.
+    </p>
 </div>
-<form method="post">
+
+<form method="post" action="{% url 'dashboard:product_toggle' object.id %}" class="mb-3">
     {% csrf_token %}
-    <button class="btn btn-danger">Yes, delete</button>
-    <a href="{% url 'dashboard:products' %}" class="btn btn-outline-secondary">Cancel</a>
+    <button class="btn btn-dark">
+        {% if object.is_active %}Deactivate "{{ object.name }}"{% else %}Reactivate "{{ object.name }}"{% endif %}
+    </button>
 </form>
+
+<a href="{% url 'dashboard:product_edit' object.id %}" class="btn btn-outline-dark">
+    Edit product details
+</a>
+<a href="{% url 'dashboard:products' %}" class="btn btn-outline-secondary">Back to products</a>
+
+{% else %}
+<div class="alert alert-danger">
+    <h5 class="mb-2">Are you sure?</h5>
+    <p class="mb-1">
+        You are about to permanently delete
+        <strong>{{ object.name }}</strong>
+        {% if variant_count %}
+            and its <strong>{{ variant_count }} variant{{ variant_count|pluralize }}</strong>
+        {% endif %}.
+    </p>
+    <p class="mb-0">
+        This action cannot be undone. If you may want to sell this product
+        again later, use <strong>Deactivate</strong> instead — it hides the
+        product from the storefront without deleting anything.
+    </p>
+</div>
+
+<form method="post" class="d-inline">
+    {% csrf_token %}
+    <button class="btn btn-danger">Yes, permanently delete</button>
+</form>
+<form method="post" action="{% url 'dashboard:product_toggle' object.id %}" class="d-inline">
+    {% csrf_token %}
+    <button class="btn btn-outline-dark">
+        {% if object.is_active %}Deactivate instead{% else %}Reactivate{% endif %}
+    </button>
+</form>
+<a href="{% url 'dashboard:products' %}" class="btn btn-outline-secondary">Cancel</a>
+{% endif %}
 {% endblock %}

@@ -7,6 +7,7 @@ from accounts.models import CustomUser, StaffDocument
 from catalog.models import Product, ProductVariant, Category
 
 
+
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
@@ -199,3 +200,5 @@ class StaffDocumentForm(forms.Form):
                 "Only PDF, JPEG, PNG, and WebP are accepted."
             )
         return f
+
+

@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<h1>Customer Inbox</h1>
+
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Date</th>
+            <th>From</th>
+            <th>Subject</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for msg in messages_list %}
+        <tr style="{% if not msg.is_read %}font-weight: bold; background: rgba(201, 169, 97, 0.05);{% endif %}">
+            <td>
+                {% if not msg.is_read %}
+                    <span class="badge bg-danger">New</span>
+                {% else %}
+                    <span class="badge bg-secondary">Read</span>
+                {% endif %}
+            </td>
+            <td>{{ msg.created_at|date:"M d, Y H:i" }}</td>
+            <td>{{ msg.name }}<br><small class="text-muted">{{ msg.email }}</small></td>
+            <td>{{ msg.subject }}</td>
+            <td>
+                <a href="{% url 'dashboard:contact_reply' msg.pk %}" class="btn btn-sm btn-outline-dark">
+                    View & Reply
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted">No messages found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,3 +1,4 @@
+from django.db.models import F
 import hmac
 import hashlib
 import json
@@ -56,6 +57,14 @@ def callback(request):
     payment.status = Payment.Status.FAILED
     payment.paystack_response = raw
     payment.save()
+
+    if payment.order.discount_code:
+        from loyalty.models import Discount
+        from django.db.models import F
+        Discount.objects.filter(code__iexact=payment.order.discount_code).update(
+            used_count=F("used_count") - 1,
+        )
+
     security_logger.warning("payment_failed ref=%s", reference)
     messages.error(request, "Payment verification failed.")
     return redirect("orders:order_detail", pk=payment.order_id)

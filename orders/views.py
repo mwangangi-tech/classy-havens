@@ -19,6 +19,9 @@ class OutOfStockError(Exception):
 
 @login_required
 def checkout(request):
+    from loyalty.models import Discount
+    from loyalty.services import validate_discount
+
     cart = Cart(request)
     if len(cart) == 0:
         messages.warning(request, "Your cart is empty.")
@@ -27,8 +30,24 @@ def checkout(request):
     if request.method == "POST":
         form = ShippingAddressForm(request.POST)
         if not form.is_valid():
-            return render(request, "orders/checkout.html",
-                          {"form": form, "cart": cart})
+            return render(request, "orders/checkout.html", {"form": form, "cart": cart})
+
+        discount_code = (form.cleaned_data.get("discount_code") or "").strip()
+        subtotal = cart.total()
+        discount = None
+        discount_amount = Decimal("0.00")
+
+        if discount_code:
+            try:
+                discount = Discount.objects.get(code__iexact=discount_code)
+            except Discount.DoesNotExist:
+                messages.error(request, "That discount code is not valid.")
+                return render(request, "orders/checkout.html", {"form": form, "cart": cart})
+            ok, err = validate_discount(discount, request.user, subtotal)
+            if not ok:
+                messages.error(request, f"Discount not applicable: {err}")
+                return render(request, "orders/checkout.html", {"form": form, "cart": cart})
+            discount_amount = discount.compute_discount(subtotal)
 
         try:
             with transaction.atomic():
@@ -41,31 +60,34 @@ def checkout(request):
                     shipping_address=address,
                     status=Order.Status.PENDING,
                     total=Decimal("0.00"),
+                    discount_amount=discount_amount,
+                    discount_code=discount.code if discount else "",
                 )
 
                 running_total = Decimal("0.00")
-                items = list(cart)
-                for item in items:
+                for item in list(cart):
                     variant = item["variant"]
                     qty = item["quantity"]
-
                     locked = ProductVariant.objects.select_for_update().get(pk=variant.pk)
                     if qty > locked.stock:
                         raise OutOfStockError(locked)
-
                     unit_price = locked.price
                     OrderItem.objects.create(
-                        order=order,
-                        variant=locked,
-                        quantity=qty,
-                        unit_price=unit_price,
+                        order=order, variant=locked,
+                        quantity=qty, unit_price=unit_price,
                     )
                     running_total += unit_price * qty
                     locked.stock -= qty
                     locked.save()
 
-                order.total = running_total
+                order.total = running_total - discount_amount
                 order.save()
+
+                # Reserve one use of the discount
+                if discount:
+                    Discount.objects.filter(pk=discount.pk).update(
+                        used_count=discount.used_count + 1,
+                    )
 
                 Payment.objects.create(
                     order=order,
@@ -75,10 +97,9 @@ def checkout(request):
                     status=Payment.Status.INITIATED,
                 )
         except OutOfStockError as exc:
-            messages.error(request, f"Sorry — not enough stock for {exc}. Please adjust your cart.")
+            messages.error(request, f"Sorry — not enough stock for {exc}.")
             return redirect("cart:cart_detail")
 
-        # Initialize Paystack outside the DB transaction
         try:
             auth_url, reference = initialize_paystack_payment(order, request.user.email)
         except Exception as exc:

@@ -3,49 +3,140 @@
 <h1>Inventory</h1>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Total units</small><h2>{{ total_units }}</h2></div></div>
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Inventory value</small><h2>{{ CURRENCY_SYMBOL }} {{ total_value|floatformat:2 }}</h2></div></div>
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Low stock (&lt; {{ low_threshold }})</small><h2>{{ low_stock|length }}</h2></div></div>
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Out of stock</small><h2>{{ out_of_stock|length }}</h2></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Total units</div><div class="stat-value">{{ total_units }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Inventory value</div><div class="stat-value">{{ CURRENCY_SYMBOL }} {{ total_value|floatformat:0 }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Low stock (&lt; {{ low_threshold }})</div><div class="stat-value">{{ low_stock|length }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Out of stock</div><div class="stat-value">{{ out_of_stock|length }}</div></div></div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="chart-card h-100">
+            <h4>Stock health</h4>
+            <div class="chart-canvas-wrap" style="height: 250px;">
+                <canvas id="healthChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card h-100">
+            <h4>Units by category</h4>
+            <div class="chart-canvas-wrap" style="height: 250px;">
+                <canvas id="unitsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card h-100">
+            <h4>Value by category</h4>
+            <div class="chart-canvas-wrap" style="height: 250px;">
+                <canvas id="valueChart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% if out_of_stock or low_stock %}
 <div class="alert alert-warning">
-    <strong>Attention:</strong>
-    {{ out_of_stock|length }} variant(s) out of stock,
-    {{ low_stock|length }} variant(s) low on stock.
+    <strong>Attention:</strong> {{ out_of_stock|length }} variant(s) out of stock, {{ low_stock|length }} variant(s) low on stock.
 </div>
 {% endif %}
 
 <table class="table align-middle">
-    <thead>
-        <tr>
-            <th>Product</th><th>Category</th><th>Size / Colour</th><th>SKU</th>
-            <th>Stock</th><th>Unit price</th><th></th>
-        </tr>
-    </thead>
+    <thead><tr><th>Product</th><th>Category</th><th>Size / Colour</th><th>SKU</th><th>Stock</th><th>Unit price</th><th></th></tr></thead>
     <tbody>
         {% for v in variants %}
         <tr>
             <td>{{ v.product.name }}</td>
             <td>{{ v.product.category.name }}</td>
             <td>{{ v.size }} / {{ v.color }}</td>
-            <td>{{ v.sku }}</td>
-            <td>
-                {{ v.stock }}
-                {% if v.stock == 0 %}<span class="badge bg-danger">Out</span>
-                {% elif v.stock < low_threshold %}<span class="badge bg-warning">Low</span>{% endif %}
-            </td>
+            <td><code>{{ v.sku }}</code></td>
+            <td>{{ v.stock }}{% if v.stock == 0 %} <span class="badge bg-danger">Out</span>{% elif v.stock < low_threshold %} <span class="badge bg-warning">Low</span>{% endif %}</td>
             <td>{{ CURRENCY_SYMBOL }} {{ v.price }}</td>
-            <td>
-                {% if perms.catalog.change_productvariant %}
-                    <a href="{% url 'dashboard:inventory_edit' v.id %}" class="btn btn-sm btn-outline-dark">Edit</a>
-                {% endif %}
-            </td>
+            <td>{% if perms.catalog.change_productvariant %}<a href="{% url 'dashboard:inventory_edit' v.id %}" class="btn btn-sm btn-outline-dark">Edit</a>{% endif %}</td>
         </tr>
-        {% empty %}
-            <tr><td colspan="7" class="text-muted">No variants yet.</td></tr>
-        {% endfor %}
+        {% empty %}<tr><td colspan="7" class="text-muted">No variants yet.</td></tr>{% endfor %}
     </tbody>
 </table>
+
+{{ chart_health_data|json_script:"healthData" }}
+{{ chart_units_data|json_script:"unitsData" }}
+{{ chart_value_data|json_script:"valueData" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    try {
+        const health = JSON.parse(document.getElementById('healthData').textContent);
+        const units  = JSON.parse(document.getElementById('unitsData').textContent);
+        const value  = JSON.parse(document.getElementById('valueData').textContent);
+
+        // Chart 1: Stock Health
+        new Chart(document.getElementById('healthChart'), {
+            type: 'doughnut',
+            data: { 
+                labels: health.labels, 
+                datasets: [{ 
+                    data: health.data, 
+                    backgroundColor: ['#3e7d57', '#c9a961', '#b83e3e'], 
+                    borderWidth: 0 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                cutout: '65%', 
+                plugins: { legend: { position: 'bottom' } } 
+            }
+        });
+
+        // Chart 2: Units by Category
+        new Chart(document.getElementById('unitsChart'), {
+            type: 'bar',
+            data: { 
+                labels: units.labels, 
+                datasets: [{ 
+                    label: 'Units', 
+                    data: units.data, 
+                    backgroundColor: '#1c1c1e', 
+                    borderRadius: 4 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { grid: { display: false } }, 
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } 
+                } 
+            }
+        });
+
+        // Chart 3: Value by Category
+        new Chart(document.getElementById('valueChart'), {
+            type: 'bar',
+            data: { 
+                labels: value.labels, 
+                datasets: [{ 
+                    label: 'Value', 
+                    data: value.data, 
+                    backgroundColor: '#c9a961', 
+                    borderRadius: 4 
+                }] 
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { grid: { display: false } }, 
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } 
+                } 
+            }
+        });
+    } catch (e) {
+        console.error("Chart rendering error:", e);
+    }
+});
+</script>
 {% endblock %}

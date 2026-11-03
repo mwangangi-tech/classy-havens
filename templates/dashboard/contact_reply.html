@@ -1,0 +1,37 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Reply to Message</h1>
+    <a href="{% url 'dashboard:contact_messages' %}" class="btn btn-outline-secondary">Back to Inbox</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card p-4 h-100" style="background: var(--bg-subtle);">
+            <h5 class="mb-3 border-bottom pb-2">Original Message</h5>
+            <p><strong>From:</strong> {{ object.name }} ({{ object.email }})</p>
+            <p><strong>Date:</strong> {{ object.created_at|date:"F j, Y, H:i" }}</p>
+            <p><strong>Subject:</strong> {{ object.subject }}</p>
+            <hr>
+            <p class="mb-0 text-muted" style="white-space: pre-wrap;">{{ object.message }}</p>
+        </div>
+    </div>
+    
+    <div class="col-md-7">
+        <div class="card p-4 h-100">
+            <h5 class="mb-3">Your Reply</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Message to {{ object.name }}</label>
+                    <textarea name="reply_message" class="form-control" rows="8" required>{% if object.reply_message %}{{ object.reply_message }}{% endif %}</textarea>
+                </div>
+                <button type="submit" class="btn btn-dark w-100 py-3">Send Reply via Email</button>
+            </form>
+            {% if object.replied_at %}
+            <p class="text-success mt-3 mb-0 text-center"><small>✓ Replied on {{ object.replied_at|date:"M d, Y H:i" }}</small></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

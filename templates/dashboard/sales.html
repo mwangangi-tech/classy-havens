@@ -3,64 +3,129 @@
 <h1>Sales</h1>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Total revenue</small><h2>{{ CURRENCY_SYMBOL }} {{ total_revenue }}</h2></div></div>
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Today</small><h2>{{ CURRENCY_SYMBOL }} {{ today_revenue }}</h2></div></div>
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Last 7 days</small><h2>{{ CURRENCY_SYMBOL }} {{ week_revenue }}</h2></div></div>
-    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Last 30 days</small><h2>{{ CURRENCY_SYMBOL }} {{ month_revenue }}</h2></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Total revenue</div><div class="stat-value">{{ CURRENCY_SYMBOL }} {{ total_revenue|floatformat:0 }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">{{ CURRENCY_SYMBOL }} {{ today_revenue|floatformat:0 }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Last 7 days</div><div class="stat-value">{{ CURRENCY_SYMBOL }} {{ week_revenue|floatformat:0 }}</div></div></div>
+    <div class="col-md-3"><div class="stat-card"><div class="stat-label">Last 30 days</div><div class="stat-value">{{ CURRENCY_SYMBOL }} {{ month_revenue|floatformat:0 }}</div></div></div>
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Total orders</small><h3>{{ total_orders }}</h3></div></div>
-    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Paid orders</small><h3>{{ paid_orders }}</h3></div></div>
-    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Average order value</small><h3>{{ CURRENCY_SYMBOL }} {{ average_order|floatformat:2 }}</h3></div></div>
+    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Total orders</div><div class="stat-value">{{ total_orders }}</div></div></div>
+    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Paid orders</div><div class="stat-value">{{ paid_orders }}</div></div></div>
+    <div class="col-md-4"><div class="stat-card"><div class="stat-label">Discounts given</div><div class="stat-value">{{ CURRENCY_SYMBOL }} {{ total_discounts_given|floatformat:0 }}</div></div></div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <h4>Revenue — last 30 days <small>Daily</small></h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <h4>Orders by status</h4>
+            <div class="chart-canvas-wrap">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row g-4">
     <div class="col-md-6">
-        <h4>Orders by status</h4>
-        <table class="table">
-            <thead><tr><th>Status</th><th>Count</th></tr></thead>
-            <tbody>
-                {% for row in status_breakdown %}
-                    <tr><td>{{ row.status|capfirst }}</td><td>{{ row.count }}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div class="col-md-6">
-        <h4>Top products</h4>
-        <table class="table">
-            <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
-            <tbody>
-                {% for row in top_products %}
+        <div class="chart-card">
+            <h4>Top products</h4>
+            <table class="table mb-0">
+                <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
+                <tbody>
+                    {% for row in top_products %}
                     <tr>
                         <td>{{ row.variant__product__name }}</td>
                         <td>{{ row.sold }}</td>
-                        <td>{{ CURRENCY_SYMBOL }} {{ row.revenue }}</td>
+                        <td>{{ CURRENCY_SYMBOL }} {{ row.revenue|floatformat:0 }}</td>
                     </tr>
-                {% empty %}
+                    {% empty %}
                     <tr><td colspan="3" class="text-muted">No sales yet.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="chart-card">
+            <h4>Recent paid orders</h4>
+            <table class="table mb-0">
+                <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Paid</th></tr></thead>
+                <tbody>
+                    {% for o in recent_paid %}
+                    <tr>
+                        <td><a href="{% url 'dashboard:order_edit' o.id %}">{{ o.id }}</a></td>
+                        <td>{{ o.user.username }}</td>
+                        <td>{{ CURRENCY_SYMBOL }} {{ o.total }}</td>
+                        <td>{{ o.paid_at|date:"M d"|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted">No paid orders yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<h4 class="mt-4">Recent paid orders</h4>
-<table class="table">
-    <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Paid at</th></tr></thead>
-    <tbody>
-        {% for o in recent_paid %}
-            <tr>
-                <td><a href="{% url 'dashboard:order_edit' o.id %}">{{ o.id }}</a></td>
-                <td>{{ o.user.username }}</td>
-                <td>{{ CURRENCY_SYMBOL }} {{ o.total }}</td>
-                <td>{{ o.paid_at|date:"M d, Y H:i"|default:"—" }}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="4" class="text-muted">No paid orders yet.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+{{ chart_revenue_data|json_script:"revenueData" }}
+{{ chart_status_data|json_script:"statusData" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+    // Parse the JSON safely
+    const rev = JSON.parse(document.getElementById('revenueData').textContent);
+    const sta = JSON.parse(document.getElementById('statusData').textContent);
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'line',
+        data: {
+            labels: rev.labels,
+            datasets: [{
+                label: 'Revenue',
+                data: rev.data,
+                borderColor: '#9a7e44',
+                backgroundColor: 'rgba(154, 126, 68, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#9a7e44',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#7a7d85' } },
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 11 }, color: '#7a7d85' } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: sta.labels,
+            datasets: [{ data: sta.data, backgroundColor: ['#000000', '#9a7e44', '#3e7d57', '#4a7ba7', '#b83e3e', '#a3a6ad'], borderWidth: 0 }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, boxHeight: 8, padding: 15, font: { size: 11 } } } }
+        }
+    });
+})();
+</script>
 {% endblock %}

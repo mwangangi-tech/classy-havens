@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">All discounts</h1>
+    {% if perms.accounts.add_customuser %}
+        <a href="{% url 'dashboard:discount_add' %}" class="btn btn-dark">+ Create Discount</a>
+    {% endif %}
+</div>
+
+<table class="table align-middle">
+    <thead>
+        <tr><th>Code</th><th>Description</th><th>Type</th><th>Value</th><th>Recipient</th><th>Used</th><th>Valid until</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for d in discounts %}
+        <tr>
+            <td><code>{{ d.code }}</code></td>
+            <td>{{ d.description|default:"—" }}</td>
+            <td>{{ d.get_discount_type_display }}</td>
+            <td>{% if d.discount_type == 'percent' %}{{ d.value }}%{% else %}{{ CURRENCY_SYMBOL }} {{ d.value }}{% endif %}</td>
+            <td>{{ d.recipient.username|default:"Any customer" }}</td>
+            <td>{{ d.used_count }}{% if d.max_uses %} / {{ d.max_uses }}{% endif %}</td>
+            <td>{{ d.valid_until|date:"M d, Y"|default:"—" }}</td>
+            <td>{% if d.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+            <td>
+                <form method="post" action="{% url 'dashboard:discount_toggle' d.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-dark">
+                        {% if d.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+            <tr><td colspan="9" class="text-muted">No discounts yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

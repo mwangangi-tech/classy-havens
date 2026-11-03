@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Contact Us — Classy Havens{% endblock %}
+
+{% block content %}
+<div class="row g-5 align-items-center justify-content-center mt-3 mb-5">
+    
+    <!-- Left Column: Brand & Contact Info -->
+    <div class="col-lg-5 col-md-8">
+        <h1 class="mb-3" style="font-size: 3rem;">Get in Touch</h1>
+        <p class="text-muted mb-5" style="font-size: 1.1rem;">
+            Whether you have a question about sizing, an order, or just want to say hello, our client care team is here to help.
+        </p>
+
+        <div class="contact-info-list mb-5">
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-box me-3">
+                    <span style="font-size: 1.5rem;">✉</span>
+                </div>
+                <div>
+                    <h6 class="text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.1em; color: var(--fg-muted);">Email Us</h6>
+                    <a href="mailto:hello@classyhavens.co.ke" class="text-dark fw-bold text-decoration-none" style="font-size: 1.1rem;">tmmbbh@gmail.com</a>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-box me-3">
+                    <span style="font-size: 1.5rem;">📞</span>
+                </div>
+                <div>
+                    <h6 class="text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.1em; color: var(--fg-muted);">Call Us</h6>
+                    <a href="tel:+254700000000" class="text-dark fw-bold text-decoration-none" style="font-size: 1.1rem;">+254 787 397 266</a>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div class="icon-box me-3">
+                    <span style="font-size: 1.5rem;">📍</span>
+                </div>
+                <div>
+                    <h6 class="text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.1em; color: var(--fg-muted);">Visit Us</h6>
+                    <span class="text-dark fw-bold" style="font-size: 1.1rem;">Nairobi, Kenya</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 rounded" style="background: var(--bg-subtle); border-left: 3px solid var(--gold);">
+            <p class="mb-0 text-muted small">
+                <strong>Hours of Operation:</strong><br>
+                Monday – Friday: 9:00 AM – 5:00 PM (EAT)<br>
+                Saturday: 10:00 AM – 2:00 PM (EAT)
+            </p>
+        </div>
+    </div>
+
+    <!-- Right Column: The Form -->
+    <div class="col-lg-6 col-md-8">
+        <div class="card p-4 p-md-5 shadow-lg border-0" style="border-radius: 12px; background: #ffffff;">
+            <h3 class="mb-4 border-bottom pb-3">Send a Message</h3>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="alert alert-danger mb-4">
+                    Please correct the errors below.
+                </div>
+                {% endif %}
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Name</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Subject</label>
+                        {{ form.subject }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Message</label>
+                        {{ form.message }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-dark w-100 mt-4 py-3">
+                    Send Message
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
